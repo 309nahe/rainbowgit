@@ -6,6 +6,8 @@ use flate2::Compression;
 use std::fs;
 use std::fs::File;
 use std::io::{Write};
+use std::io;
+use std::path::Path;
 
 pub struct Blob {
     pub content: Vec<u8>,
@@ -28,6 +30,13 @@ pub fn create_blob(path: &str) -> std::io::Result<Blob> {
     let dir = format!(".rainbowgit/objects/{}", &hex_hash[..2]);
     let file = format!("{}/{}", dir, &hex_hash[2..]);
 
+    if !Path::new(".rainbowgit/objects").exists() {
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            "Repository not initialized. Run `rainbowgit init` first.",
+        ));
+    }
+    
     fs::create_dir_all(&dir)?;
 
     let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
